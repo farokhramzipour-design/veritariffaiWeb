@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiGet } from '@app/api';
+import { API_BASE_URL, apiGet } from '@app/api';
 
 type User = {
   id?: number | null;
@@ -40,7 +40,7 @@ export default function Login() {
   }, [navigate]);
 
   const handleGoogleLogin = () => {
-    window.location.href = `/api/v1/login/google/authorize`;
+    window.location.href = `${API_BASE_URL}/api/v1/login/google/authorize`;
   };
 
   return (

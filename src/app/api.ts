@@ -1,4 +1,4 @@
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://api.veritariffai.co';
 
 export async function apiGet<T>(path: string, signal?: AbortSignal): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, { signal, credentials: 'include' });
