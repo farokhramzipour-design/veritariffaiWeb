@@ -1,6 +1,6 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useMemo } from 'react';
-import { API_BASE_URL } from '@app/api';
+import { API_BASE_URL, clearAccessToken } from '@app/api';
 
 const navLinks = [
   { label: 'Landing', to: '/' },
@@ -32,6 +32,7 @@ export default function AppShell() {
         headers: { accept: 'application/json' },
       });
     } finally {
+      clearAccessToken();
       localStorage.removeItem('vtai_user');
       navigate('/login');
     }
