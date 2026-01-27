@@ -1,17 +1,20 @@
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://api.veritariffai.co';
 
-const TOKEN_KEY = 'vtai_access_token';
+const TOKEN_KEY = 'token';
+const LEGACY_TOKEN_KEY = 'vtai_access_token';
 
 export function getAccessToken() {
-  return localStorage.getItem(TOKEN_KEY);
+  return localStorage.getItem(TOKEN_KEY) ?? localStorage.getItem(LEGACY_TOKEN_KEY);
 }
 
 export function setAccessToken(token: string) {
   localStorage.setItem(TOKEN_KEY, token);
+  localStorage.removeItem(LEGACY_TOKEN_KEY);
 }
 
 export function clearAccessToken() {
   localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(LEGACY_TOKEN_KEY);
 }
 
 function buildHeaders(headers?: HeadersInit) {

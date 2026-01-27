@@ -1,6 +1,6 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useMemo } from 'react';
-import { API_BASE_URL, clearAccessToken } from '@app/api';
+import { useEffect, useState } from 'react';
+import { API_BASE_URL, apiGet, clearAccessToken, setAccessToken } from '@app/api';
 
 const navLinks = [
   { label: 'Landing', to: '/' },
@@ -16,13 +16,53 @@ type User = {
 export default function AppShell() {
   const location = useLocation();
   const navigate = useNavigate();
-  const user = useMemo<User | null>(() => {
+  const [user, setUser] = useState<User | null>(() => {
     try {
       const raw = localStorage.getItem('vtai_user');
       return raw ? (JSON.parse(raw) as User) : null;
     } catch {
       return null;
     }
+  });
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const token = params.get('token');
+    if (!token) return;
+
+    setAccessToken(token);
+    params.delete('token');
+    const nextSearch = params.toString();
+    navigate(
+      {
+        pathname: location.pathname,
+        search: nextSearch ? `?${nextSearch}` : '',
+      },
+      { replace: true }
+    );
+
+    apiGet<User>('/api/v1/users/me')
+      .then((freshUser) => {
+        localStorage.setItem('vtai_user', JSON.stringify(freshUser));
+        setUser(freshUser);
+      })
+      .catch(() => {
+        clearAccessToken();
+        localStorage.removeItem('vtai_user');
+      });
+  }, [location.pathname, location.search, navigate]);
+
+  useEffect(() => {
+    const syncUser = () => {
+      try {
+        const raw = localStorage.getItem('vtai_user');
+        setUser(raw ? (JSON.parse(raw) as User) : null);
+      } catch {
+        setUser(null);
+      }
+    };
+    window.addEventListener('storage', syncUser);
+    return () => window.removeEventListener('storage', syncUser);
   }, []);
 
   const handleLogout = async () => {
@@ -34,6 +74,7 @@ export default function AppShell() {
     } finally {
       clearAccessToken();
       localStorage.removeItem('vtai_user');
+      setUser(null);
       navigate('/login');
     }
   };
