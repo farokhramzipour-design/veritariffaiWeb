@@ -60,6 +60,9 @@ export default function AppShell() {
       .then((freshUser) => {
         localStorage.setItem('vtai_user', JSON.stringify(freshUser));
         setUser(freshUser);
+        if (location.pathname === '/' || location.pathname === '/login') {
+          navigate('/panel', { replace: true });
+        }
       })
       .catch(() => {
         clearAccessToken();
