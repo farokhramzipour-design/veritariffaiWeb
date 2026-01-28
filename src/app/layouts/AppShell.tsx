@@ -27,19 +27,34 @@ export default function AppShell() {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const token = params.get('token');
-    if (!token) return;
+    const hashParams = new URLSearchParams(location.hash.replace(/^#/, ''));
+    const token =
+      params.get('token') ||
+      params.get('access_token') ||
+      hashParams.get('token') ||
+      hashParams.get('access_token');
 
-    setAccessToken(token);
-    params.delete('token');
-    const nextSearch = params.toString();
-    navigate(
-      {
-        pathname: location.pathname,
-        search: nextSearch ? `?${nextSearch}` : '',
-      },
-      { replace: true }
-    );
+    if (token) {
+      setAccessToken(token);
+      params.delete('token');
+      params.delete('access_token');
+      hashParams.delete('token');
+      hashParams.delete('access_token');
+
+      const nextSearch = params.toString();
+      const nextHash = hashParams.toString();
+      navigate(
+        {
+          pathname: location.pathname,
+          search: nextSearch ? `?${nextSearch}` : '',
+          hash: nextHash ? `#${nextHash}` : '',
+        },
+        { replace: true }
+      );
+    }
+
+    const hasToken = token || localStorage.getItem('token') || localStorage.getItem('vtai_access_token');
+    if (!hasToken || user) return;
 
     apiGet<User>('/api/v1/users/me')
       .then((freshUser) => {
@@ -49,8 +64,9 @@ export default function AppShell() {
       .catch(() => {
         clearAccessToken();
         localStorage.removeItem('vtai_user');
+        setUser(null);
       });
-  }, [location.pathname, location.search, navigate]);
+  }, [location.pathname, location.search, location.hash, navigate, user]);
 
   useEffect(() => {
     const syncUser = () => {
