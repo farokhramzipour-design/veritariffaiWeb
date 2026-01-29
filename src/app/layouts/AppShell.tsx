@@ -107,8 +107,8 @@ export default function AppShell() {
     <div className="app">
       <header className="app__header">
         <Link className="brand" to="/">
-          <span className="brand__mark">VT</span>
-          <span className="brand__name">VeriTariffAI</span>
+          <span className="brand__mark">TF</span>
+          <span className="brand__name">TradeFlow</span>
         </Link>
         <nav className="nav">
           {navLinks.map((link) => (

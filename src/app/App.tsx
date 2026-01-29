@@ -4,6 +4,7 @@ import ProtectedRoute from './ProtectedRoute';
 import Landing from '@pages/Landing';
 import Login from '@pages/Login';
 import Panel from '@pages/Panel';
+import ShipmentDetail from '@pages/ShipmentDetail';
 
 export default function App() {
   return (
@@ -16,6 +17,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Panel />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/shipments/:po"
+          element={
+            <ProtectedRoute>
+              <ShipmentDetail />
             </ProtectedRoute>
           }
         />
