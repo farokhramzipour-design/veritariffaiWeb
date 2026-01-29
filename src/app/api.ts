@@ -1,10 +1,15 @@
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://api.veritariffai.co';
 
 const TOKEN_KEY = 'token';
+const REFRESH_TOKEN_KEY = 'refresh_token';
 const LEGACY_TOKEN_KEY = 'vtai_access_token';
 
 export function getAccessToken() {
   return localStorage.getItem(TOKEN_KEY) ?? localStorage.getItem(LEGACY_TOKEN_KEY);
+}
+
+export function getRefreshToken() {
+  return localStorage.getItem(REFRESH_TOKEN_KEY);
 }
 
 export function setAccessToken(token: string) {
@@ -12,9 +17,21 @@ export function setAccessToken(token: string) {
   localStorage.removeItem(LEGACY_TOKEN_KEY);
 }
 
+export function setTokens(accessToken: string, refreshToken?: string) {
+  setAccessToken(accessToken);
+  if (refreshToken) {
+    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+  }
+}
+
 export function clearAccessToken() {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(LEGACY_TOKEN_KEY);
+}
+
+export function clearTokens() {
+  clearAccessToken();
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
 }
 
 function buildHeaders(headers?: HeadersInit) {

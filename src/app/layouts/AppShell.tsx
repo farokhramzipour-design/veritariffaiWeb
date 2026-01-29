@@ -1,13 +1,22 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { API_BASE_URL, apiGet, clearAccessToken, setAccessToken } from '@app/api';
+import { apiGet, clearTokens, setAccessToken } from '@app/api';
 
 const navLinks = [{ label: 'Landing', to: '/' }];
 
 type User = {
-  id?: number | null;
+  id?: string;
   email?: string | null;
-  full_name?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
+};
+
+type MeResponse = {
+  user: User;
+  upgrade_available: boolean;
+  needs_companies_house_link: boolean;
+  needs_vat: boolean;
+  requires_manual_eori: boolean;
 };
 
 export default function AppShell() {
@@ -53,16 +62,16 @@ export default function AppShell() {
     const hasToken = token || localStorage.getItem('token') || localStorage.getItem('vtai_access_token');
     if (!hasToken || user) return;
 
-    apiGet<User>('/api/v1/users/me')
-      .then((freshUser) => {
-        localStorage.setItem('vtai_user', JSON.stringify(freshUser));
-        setUser(freshUser);
+    apiGet<MeResponse>('/api/v1/me')
+      .then((me) => {
+        localStorage.setItem('vtai_user', JSON.stringify(me.user));
+        setUser(me.user);
         if (location.pathname === '/' || location.pathname === '/login') {
           navigate('/panel', { replace: true });
         }
       })
       .catch(() => {
-        clearAccessToken();
+        clearTokens();
         localStorage.removeItem('vtai_user');
         setUser(null);
       });
@@ -81,24 +90,17 @@ export default function AppShell() {
     return () => window.removeEventListener('storage', syncUser);
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      await fetch(`${API_BASE_URL}/api/v1/logout`, {
-        method: 'POST',
-        headers: { accept: 'application/json' },
-      });
-    } finally {
-      clearAccessToken();
-      localStorage.removeItem('vtai_user');
-      setUser(null);
-      navigate('/login');
-    }
+  const handleLogout = () => {
+    clearTokens();
+    localStorage.removeItem('vtai_user');
+    setUser(null);
+    navigate('/login');
   };
 
   const initials =
-    user?.full_name
-      ?.split(' ')
-      .map((part) => part[0])
+    [user?.first_name, user?.last_name]
+      .filter(Boolean)
+      .map((part) => part![0])
       .join('')
       .slice(0, 2)
       .toUpperCase() || (user?.email?.[0]?.toUpperCase() ?? 'U');
@@ -132,7 +134,9 @@ export default function AppShell() {
                 {initials}
               </div>
               <div className="nav__meta">
-                <span>{user.full_name ?? 'User'}</span>
+                <span>
+                  {[user.first_name, user.last_name].filter(Boolean).join(' ') || 'User'}
+                </span>
                 <span className="muted">{user.email ?? 'Signed in'}</span>
               </div>
               <button className="button button--ghost" type="button" onClick={handleLogout}>

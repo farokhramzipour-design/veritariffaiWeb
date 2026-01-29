@@ -1,13 +1,27 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL, apiGet } from '@app/api';
+import { API_BASE_URL, apiGet, setTokens } from '@app/api';
 
 type User = {
-  id?: number | null;
-  email?: string | null;
-  full_name?: string | null;
-  is_active?: boolean | null;
-  is_superuser?: boolean;
+  id: string;
+  email: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  plan?: string | null;
+};
+
+type MeResponse = {
+  user: User;
+  upgrade_available: boolean;
+  needs_companies_house_link: boolean;
+  needs_vat: boolean;
+  requires_manual_eori: boolean;
+};
+
+type TokenPair = {
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
 };
 
 export default function Login() {
@@ -18,18 +32,31 @@ export default function Login() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
-    if (!code) return;
+    const state = params.get('state');
+    if (!code || !state) return;
+
+    const provider = sessionStorage.getItem('oauth_provider') ?? 'google';
+    sessionStorage.removeItem('oauth_provider');
 
     const controller = new AbortController();
     setStatus('loading');
     setMessage('Completing Google sign-in...');
 
-    apiGet(`/api/v1/login/google/callback?code=${encodeURIComponent(code)}`, controller.signal)
-      .then(() => apiGet<User>('/api/v1/users/me', controller.signal))
-      .then((user) => {
-        localStorage.setItem('vtai_user', JSON.stringify(user));
+    apiGet<TokenPair>(
+      `/api/v1/auth/${provider}/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(
+        state
+      )}`,
+      controller.signal
+    )
+      .then((tokens) => {
+        setTokens(tokens.access_token, tokens.refresh_token);
+        return apiGet<MeResponse>('/api/v1/me', controller.signal);
+      })
+      .then((me) => {
+        localStorage.setItem('vtai_user', JSON.stringify(me.user));
         setStatus('success');
-        setMessage(`Welcome back${user.full_name ? `, ${user.full_name}` : ''}.`);
+        const name = [me.user.first_name, me.user.last_name].filter(Boolean).join(' ');
+        setMessage(`Welcome back${name ? `, ${name}` : ''}.`);
         navigate('/panel', { replace: true });
       })
       .catch((error: Error) => {
@@ -41,12 +68,13 @@ export default function Login() {
   }, [navigate]);
 
   const handleGoogleLogin = () => {
-    window.location.href = `${API_BASE_URL}/api/v1/login/google/authorize`;
+    sessionStorage.setItem('oauth_provider', 'google');
+    window.location.href = `${API_BASE_URL}/api/v1/auth/google/login`;
   };
 
   const handleMicrosoftLogin = () => {
-    setStatus('error');
-    setMessage('Microsoft login is not configured yet.');
+    sessionStorage.setItem('oauth_provider', 'microsoft');
+    window.location.href = `${API_BASE_URL}/api/v1/auth/microsoft/login`;
   };
 
   return (
