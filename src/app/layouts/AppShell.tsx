@@ -2,10 +2,7 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { API_BASE_URL, apiGet, clearAccessToken, setAccessToken } from '@app/api';
 
-const navLinks = [
-  { label: 'Landing', to: '/' },
-  { label: 'Panel', to: '/panel' },
-];
+const navLinks = [{ label: 'Landing', to: '/' }];
 
 type User = {
   id?: number | null;

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL, apiGet, apiPostForm, setAccessToken } from '@app/api';
+import { API_BASE_URL, apiGet } from '@app/api';
 
 type User = {
   id?: number | null;
@@ -10,17 +10,10 @@ type User = {
   is_superuser?: boolean;
 };
 
-type TokenResponse = {
-  access_token: string;
-  token_type: string;
-};
-
 export default function Login() {
   const navigate = useNavigate();
   const [status, setStatus] = useState<'idle' | 'loading' | 'error' | 'success'>('idle');
   const [message, setMessage] = useState<string>('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -47,29 +40,13 @@ export default function Login() {
     return () => controller.abort();
   }, [navigate]);
 
-  const handlePasswordLogin = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setStatus('loading');
-    setMessage('Signing you in...');
-    try {
-      const token = await apiPostForm<TokenResponse>(
-        '/api/v1/login/access-token',
-        new URLSearchParams({ username: email, password })
-      );
-      setAccessToken(token.access_token);
-      const user = await apiGet<User>('/api/v1/users/me');
-      localStorage.setItem('vtai_user', JSON.stringify(user));
-      setStatus('success');
-      setMessage(`Welcome back${user.full_name ? `, ${user.full_name}` : ''}.`);
-      navigate('/panel', { replace: true });
-    } catch (error) {
-      setStatus('error');
-      setMessage((error as Error).message || 'Login failed. Please try again.');
-    }
-  };
-
   const handleGoogleLogin = () => {
     window.location.href = `${API_BASE_URL}/api/v1/login/google/authorize`;
+  };
+
+  const handleMicrosoftLogin = () => {
+    setStatus('error');
+    setMessage('Microsoft login is not configured yet.');
   };
 
   return (
@@ -83,37 +60,14 @@ export default function Login() {
           </p>
           {status !== 'idle' && <p className={`status status--${status}`}>{message}</p>}
         </div>
-        <form className="form" onSubmit={handlePasswordLogin}>
-          <label className="form__field">
-            <span>Email</span>
-            <input
-              type="email"
-              placeholder="you@company.com"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              required
-            />
-          </label>
-          <label className="form__field">
-            <span>Password</span>
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-            />
-          </label>
-          <button className="button button--primary" type="submit">
-            Sign in
+        <div className="form">
+          <button className="button button--primary" type="button" onClick={handleGoogleLogin}>
+            Login with Google
           </button>
-          <button className="button button--ghost" type="button" onClick={handleGoogleLogin}>
-            Continue with Google
+          <button className="button button--ghost" type="button" onClick={handleMicrosoftLogin}>
+            Login with Microsoft
           </button>
-          <button className="button button--ghost" type="button">
-            Request access
-          </button>
-        </form>
+        </div>
       </div>
       <aside className="login__aside">
         <div className="aside__card">
