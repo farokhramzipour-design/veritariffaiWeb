@@ -10,7 +10,7 @@ const sections = [
   {
     title: 'Metal Importers',
     items: [
-      { label: 'New Shipments', icon: '🚢' },
+      { label: 'New Shipments', icon: '🚢', to: '/invoices/upload' },
       { label: 'Compliance Tasks', icon: '✅' },
       { label: 'Passport Library', icon: '🧾' },
       { label: 'Collaboration', icon: '🤝' },
@@ -81,12 +81,19 @@ export default function Panel() {
           <div key={section.title} className="sidebar__section">
             <p className="sidebar__label">{section.title}</p>
             <div className="sidebar__items">
-              {section.items.map((item) => (
-                <button key={item.label} className="sidebar__item" type="button">
-                  <span className="sidebar__icon">{item.icon}</span>
-                  {item.label}
-                </button>
-              ))}
+              {section.items.map((item) =>
+                item.to ? (
+                  <Link key={item.label} className="sidebar__item" to={item.to}>
+                    <span className="sidebar__icon">{item.icon}</span>
+                    {item.label}
+                  </Link>
+                ) : (
+                  <button key={item.label} className="sidebar__item" type="button">
+                    <span className="sidebar__icon">{item.icon}</span>
+                    {item.label}
+                  </button>
+                )
+              )}
             </div>
             {section.note && <p className="sidebar__note">{section.note}</p>}
           </div>

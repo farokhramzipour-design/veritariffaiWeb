@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL, apiGet, setTokens } from '@app/api';
+import { API_BASE_URL, apiGet, apiGetOptionalJson, setTokens } from '@app/api';
 
 type User = {
   id: string;
@@ -42,14 +42,16 @@ export default function Login() {
     setStatus('loading');
     setMessage('Completing Google sign-in...');
 
-    apiGet<TokenPair>(
+    apiGetOptionalJson<TokenPair>(
       `/api/v1/auth/${provider}/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(
         state
       )}`,
       controller.signal
     )
       .then((tokens) => {
-        setTokens(tokens.access_token, tokens.refresh_token);
+        if (tokens?.access_token) {
+          setTokens(tokens.access_token, tokens.refresh_token);
+        }
         return apiGet<MeResponse>('/api/v1/me', controller.signal);
       })
       .then((me) => {

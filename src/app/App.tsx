@@ -5,6 +5,9 @@ import Landing from '@pages/Landing';
 import Login from '@pages/Login';
 import Panel from '@pages/Panel';
 import ShipmentDetail from '@pages/ShipmentDetail';
+import InvoiceUploadPage from '@pages/InvoiceUploadPage';
+import InvoiceDraftReviewPage from '@pages/InvoiceDraftReviewPage';
+import InvoiceDetailPage from '@pages/InvoiceDetailPage';
 
 export default function App() {
   return (
@@ -17,6 +20,30 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Panel />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/invoices/upload"
+          element={
+            <ProtectedRoute>
+              <InvoiceUploadPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/invoices/drafts/:draftId"
+          element={
+            <ProtectedRoute>
+              <InvoiceDraftReviewPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/invoices/:invoiceId"
+          element={
+            <ProtectedRoute>
+              <InvoiceDetailPage />
             </ProtectedRoute>
           }
         />
