@@ -335,6 +335,11 @@ input {
   gap: 24px;
 }
 
+.tradeflow__content {
+  display: grid;
+  gap: 24px;
+}
+
 .tradeflow__topbar {
   display: flex;
   align-items: flex-start;

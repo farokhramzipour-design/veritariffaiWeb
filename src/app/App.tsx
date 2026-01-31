@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import AppShell from './layouts/AppShell';
+import TradeFlowLayout from './layouts/TradeFlowLayout';
 import ProtectedRoute from './ProtectedRoute';
 import Landing from '@pages/Landing';
 import Login from '@pages/Login';
@@ -16,45 +17,18 @@ export default function App() {
         <Route index element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route
-          path="/panel"
           element={
             <ProtectedRoute>
-              <Panel />
+              <TradeFlowLayout />
             </ProtectedRoute>
           }
-        />
-        <Route
-          path="/invoices/upload"
-          element={
-            <ProtectedRoute>
-              <InvoiceUploadPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/invoices/drafts/:draftId"
-          element={
-            <ProtectedRoute>
-              <InvoiceDraftReviewPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/invoices/:invoiceId"
-          element={
-            <ProtectedRoute>
-              <InvoiceDetailPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/shipments/:po"
-          element={
-            <ProtectedRoute>
-              <ShipmentDetail />
-            </ProtectedRoute>
-          }
-        />
+        >
+          <Route path="/panel" element={<Panel />} />
+          <Route path="/invoices/upload" element={<InvoiceUploadPage />} />
+          <Route path="/invoices/drafts/:draftId" element={<InvoiceDraftReviewPage />} />
+          <Route path="/invoices/:invoiceId" element={<InvoiceDetailPage />} />
+          <Route path="/shipments/:po" element={<ShipmentDetail />} />
+        </Route>
       </Route>
     </Routes>
   );
