@@ -6,7 +6,19 @@ const kpis = [
   { title: 'Market Summary', value: 'Steel +2.8%', meta: 'Aluminum -1.1%' },
 ];
 
-const sections = [
+type SidebarItem = {
+  label: string;
+  icon: string;
+  to?: string;
+};
+
+type SidebarSection = {
+  title: string;
+  items: SidebarItem[];
+  note?: string;
+};
+
+const sections: SidebarSection[] = [
   {
     title: 'Metal Importers',
     items: [

@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { useInvoice } from '@app/invoices';
+import { type InvoiceItemOut, useInvoice } from '@app/invoices';
 
 function formatMoney(value: number | null | undefined) {
   if (value == null) return '—';
@@ -76,7 +76,7 @@ export default function InvoiceDetailPage() {
           <span>Line Total</span>
           <span>SKU</span>
         </div>
-        {data.items.map((item) => (
+        {data.items.map((item: InvoiceItemOut) => (
           <div key={item.id} className="invoice-detail__row">
             <span>{item.description}</span>
             <span>{item.quantity}</span>

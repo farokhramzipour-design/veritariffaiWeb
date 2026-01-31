@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
   ConfirmInvoiceRequest,
   ConfirmLineItem,
+  LineItemExtract,
   useConfirmInvoice,
   useDraftInvoice,
 } from '@app/invoices';
@@ -19,8 +20,8 @@ function computeLineTotal(item: ConfirmLineItem) {
   return item.quantity * (item.unit_price ?? 0);
 }
 
-function sum(values: Array<number | null | undefined>) {
-  return values.reduce((acc, value) => acc + (value ?? 0), 0);
+function sum(values: number[]) {
+  return values.reduce((acc, value) => acc + value, 0);
 }
 
 function formatMoney(value: number | null | undefined) {
@@ -36,7 +37,9 @@ export default function InvoiceDraftReviewPage() {
   const [form, setForm] = useState<ConfirmInvoiceRequest | null>(null);
   const [dirty, setDirty] = useState(false);
   const lineConfidences = useMemo(
-    () => data?.extracted_payload?.line_items?.map((item) => item.confidence ?? null) ?? [],
+    () =>
+      data?.extracted_payload?.line_items?.map((item: LineItemExtract) => item.confidence ?? null) ??
+      [],
     [data]
   );
 
@@ -47,7 +50,7 @@ export default function InvoiceDraftReviewPage() {
     }
     const payload = data.extracted_payload;
     if (!payload) return;
-    const lineItems: ConfirmLineItem[] = (payload.line_items ?? []).map((item) => ({
+    const lineItems: ConfirmLineItem[] = (payload.line_items ?? []).map((item: LineItemExtract) => ({
       description: item.description,
       quantity: item.quantity ?? 0,
       unit_price: normalizeDraftValue(item.unit_price),
@@ -70,10 +73,10 @@ export default function InvoiceDraftReviewPage() {
 
   const computedTotals = useMemo(() => {
     if (!form) return null;
-    const lineTotals = form.line_items.map((item) =>
+    const lineTotals = form.line_items.map((item: ConfirmLineItem) =>
       item.line_total != null ? item.line_total : computeLineTotal(item)
     );
-    const subtotal = sum(lineTotals);
+    const subtotal = sum(lineTotals.map((value) => value ?? 0));
     const tax = form.tax ?? 0;
     const total = subtotal + tax;
     return { subtotal, total };

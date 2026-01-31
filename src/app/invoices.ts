@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, type Query } from '@tanstack/react-query';
 import { apiGet, apiPostFile, apiPostJson } from '@app/api';
 
 export type LineItemExtract = {
@@ -114,7 +114,7 @@ export function useDraftInvoice(draftId: string) {
     queryKey: ['draft-invoice', draftId],
     queryFn: () => apiGet<DraftInvoiceOut>(`/api/v1/invoices/drafts/${draftId}`),
     enabled: Boolean(draftId),
-    refetchInterval: (query) => {
+    refetchInterval: (query: Query<DraftInvoiceOut>) => {
       const status = query.state.data?.status?.toUpperCase();
       if (!status) return 2000;
       if (['UPLOADED', 'EXTRACTING'].includes(status)) return 2000;
