@@ -72,10 +72,17 @@ export default function InvoiceReviewPage() {
     }
   }, [invoice?.currency]);
 
-  const blockingTasks = useMemo(
-    () => tasks.filter((task) => TASKS_BLOCKING.has(task.task_type) && task.status !== 'resolved'),
-    [tasks]
-  );
+  const blockingTasks = useMemo(() => {
+    const itemMap = new Map(invoice?.items?.map((item) => [item.id, item]) ?? []);
+    return tasks.filter((task) => {
+      if (!TASKS_BLOCKING.has(task.task_type) || task.status === 'resolved') return false;
+      if (task.task_type === 'HS_CODE_MISSING' && task.line_item_id) {
+        const item = itemMap.get(task.line_item_id);
+        if (item?.validated_hs_code) return false;
+      }
+      return true;
+    });
+  }, [tasks, invoice]);
 
   useEffect(() => {
     if (activeTask || blockingTasks.length === 0) return;
