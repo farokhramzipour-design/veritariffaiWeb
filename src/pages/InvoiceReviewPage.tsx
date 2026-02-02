@@ -53,16 +53,27 @@ export default function InvoiceReviewPage() {
   const resolveHsMutation = useResolveHsCode(invoiceId ?? '', selectedLineItem?.id ?? '');
   const refineHsMutation = useRefineHsCode(invoiceId ?? '', selectedLineItem?.id ?? '');
 
+  const normalizeTasks = (payload: unknown) => {
+    if (Array.isArray(payload)) return payload as ValidationTaskOut[];
+    const response = payload as {
+      tasks?: Array<
+        ValidationTaskOut & { payload_jsonb?: Record<string, unknown>; resolution_jsonb?: Record<string, unknown> }
+      >;
+    };
+    if (!response?.tasks) return [];
+    return response.tasks.map((task) => ({
+      ...task,
+      status: task.status?.toLowerCase?.() ?? task.status,
+      payload: task.payload ?? task.payload_jsonb ?? null,
+      resolution: task.resolution ?? task.resolution_jsonb ?? null,
+    }));
+  };
+
   useEffect(() => {
     if (!invoiceId || validatedOnceRef.current) return;
     validatedOnceRef.current = true;
     validateMutation.mutate(undefined, {
-      onSuccess: (payload) => {
-        const next = Array.isArray(payload)
-          ? payload
-          : (payload as { tasks?: ValidationTaskOut[] })?.tasks ?? [];
-        setTasks(next);
-      },
+      onSuccess: (payload) => setTasks(normalizeTasks(payload)),
     });
   }, [invoiceId, validateMutation]);
 
@@ -75,7 +86,8 @@ export default function InvoiceReviewPage() {
   const blockingTasks = useMemo(() => {
     const itemMap = new Map(invoice?.items?.map((item) => [item.id, item]) ?? []);
     return tasks.filter((task) => {
-      if (!TASKS_BLOCKING.has(task.task_type) || task.status === 'resolved') return false;
+      const taskStatus = task.status?.toLowerCase?.() ?? task.status;
+      if (!TASKS_BLOCKING.has(task.task_type) || taskStatus === 'resolved') return false;
       if (task.task_type === 'HS_CODE_MISSING' && task.line_item_id) {
         const item = itemMap.get(task.line_item_id);
         if (item?.validated_hs_code) return false;
@@ -95,19 +107,15 @@ export default function InvoiceReviewPage() {
       const item = invoice?.items.find((line) => line.id === task.line_item_id);
       if (item) setSelectedLineItem(item);
     }
-    const options = (task.payload?.options as TariffOption[]) ?? [];
+    const payload = task.payload as { options?: TariffOption[]; search_suggestions?: TariffOption[] } | undefined;
+    const options = payload?.options ?? payload?.search_suggestions ?? [];
     setHsOptions(options);
   };
 
   const refreshTasks = () => {
     if (!invoiceId) return;
     validateMutation.mutate(undefined, {
-      onSuccess: (payload) => {
-        const next = Array.isArray(payload)
-          ? payload
-          : (payload as { tasks?: ValidationTaskOut[] })?.tasks ?? [];
-        setTasks(next);
-      },
+      onSuccess: (payload) => setTasks(normalizeTasks(payload)),
     });
     refetch();
   };
