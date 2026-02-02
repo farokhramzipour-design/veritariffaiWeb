@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Stack } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -47,13 +47,15 @@ export default function InvoiceReviewPage() {
   );
   const [currency, setCurrency] = useState('USD');
   const [currencyError, setCurrencyError] = useState<string | null>(null);
+  const validatedOnceRef = useRef(false);
 
   const resolveTaskMutation = useResolveValidationTask(activeTask?.id ?? '');
   const resolveHsMutation = useResolveHsCode(invoiceId ?? '', selectedLineItem?.id ?? '');
   const refineHsMutation = useRefineHsCode(invoiceId ?? '', selectedLineItem?.id ?? '');
 
   useEffect(() => {
-    if (!invoiceId) return;
+    if (!invoiceId || validatedOnceRef.current) return;
+    validatedOnceRef.current = true;
     validateMutation.mutate(undefined, {
       onSuccess: (payload) => setTasks(payload ?? []),
     });
