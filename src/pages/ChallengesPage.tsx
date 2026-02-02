@@ -31,7 +31,7 @@ type ChallengesResponse = {
 };
 
 const CHALLENGES_URL =
-  'https://challenge.veritariffai.co/runs/2026-02-01T14%3A47%3A34.932365/challenges';
+  'https://challenge.veritariffai.co/runs/2026-02-01T15%3A34%3A38.226980/challenges';
 
 function formatConfidence(value: number) {
   const normalized = Math.max(0, Math.min(1, value));
