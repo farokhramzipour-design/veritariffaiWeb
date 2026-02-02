@@ -11,7 +11,6 @@ const emptyItem: ConfirmLineItem = {
   description: '',
   quantity: 1,
   unit_price: null,
-  tax_rate: null,
   line_total: null,
   sku: null,
 };
@@ -54,7 +53,6 @@ export default function LineItemsTableEditable({ items, onChange, confidences }:
           <span>Description</span>
           <span>Qty</span>
           <span>Unit Price</span>
-          <span>Tax Rate</span>
           <span>Line Total</span>
           <span>SKU</span>
           <span>Conf.</span>
@@ -76,13 +74,6 @@ export default function LineItemsTableEditable({ items, onChange, confidences }:
             <input
               value={item.unit_price ?? ''}
               onChange={(event) => updateRow(index, { unit_price: toNumber(event.target.value) })}
-              type="number"
-              min="0"
-              step="0.01"
-            />
-            <input
-              value={item.tax_rate ?? ''}
-              onChange={(event) => updateRow(index, { tax_rate: toNumber(event.target.value) })}
               type="number"
               min="0"
               step="0.01"

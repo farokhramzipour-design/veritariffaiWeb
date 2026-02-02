@@ -54,19 +54,21 @@ export default function InvoiceDraftReviewPage() {
       description: item.description,
       quantity: item.quantity ?? 0,
       unit_price: normalizeDraftValue(item.unit_price),
-      tax_rate: normalizeDraftValue(item.tax_rate),
       line_total: normalizeDraftValue(item.line_total),
       sku: item.sku ?? null,
+      extracted_hs_code: item.extracted_hs_code ?? null,
+      validated_hs_code: item.validated_hs_code ?? null,
     }));
     setForm({
-      vendor_name: payload.vendor_name ?? null,
+      supplier_name: payload.supplier_name ?? null,
       invoice_number: payload.invoice_number ?? null,
       invoice_date: payload.invoice_date ?? '',
       due_date: payload.due_date ?? null,
+      incoterm: payload.incoterm ?? null,
       currency: payload.currency ?? '',
-      subtotal: normalizeDraftValue(payload.subtotal),
-      tax: normalizeDraftValue(payload.tax),
-      total: normalizeDraftValue(payload.total),
+      total_value: normalizeDraftValue(payload.total_value),
+      freight_cost: normalizeDraftValue(payload.freight_cost),
+      insurance_cost: normalizeDraftValue(payload.insurance_cost),
       line_items: lineItems.length ? lineItems : [{ description: '', quantity: 1 }],
     });
   }, [data, dirty]);
@@ -76,15 +78,13 @@ export default function InvoiceDraftReviewPage() {
     const lineTotals = form.line_items.map((item: ConfirmLineItem) =>
       item.line_total != null ? item.line_total : computeLineTotal(item)
     );
-    const subtotal = sum(lineTotals.map((value) => value ?? 0));
-    const tax = form.tax ?? 0;
-    const total = subtotal + tax;
-    return { subtotal, total };
+    const totalValue = sum(lineTotals.map((value) => value ?? 0));
+    return { totalValue };
   }, [form]);
 
   const mismatch =
     form && computedTotals
-      ? Math.abs((form.total ?? computedTotals.total) - computedTotals.total) > 1
+      ? Math.abs((form.total_value ?? computedTotals.totalValue) - computedTotals.totalValue) > 1
       : false;
 
   const handleFieldChange = (patch: Partial<ConfirmInvoiceRequest>) => {
@@ -110,7 +110,7 @@ export default function InvoiceDraftReviewPage() {
     const result = await confirmMutation.mutateAsync(form);
     const invoiceId = result?.invoice_id ?? result?.id;
     if (invoiceId) {
-      navigate(`/invoices/${invoiceId}`);
+      navigate(`/invoices/${invoiceId}/review`);
       return;
     }
     navigate('/invoices/upload');
@@ -165,10 +165,10 @@ export default function InvoiceDraftReviewPage() {
           <div className="invoice-draft__grid">
             <div className="invoice-form">
               <label>
-                Vendor name
+                Supplier name
                 <input
-                  value={form.vendor_name ?? ''}
-                  onChange={(event) => handleFieldChange({ vendor_name: event.target.value })}
+                  value={form.supplier_name ?? ''}
+                  onChange={(event) => handleFieldChange({ supplier_name: event.target.value })}
                 />
               </label>
               <label>
@@ -195,6 +195,13 @@ export default function InvoiceDraftReviewPage() {
                 />
               </label>
               <label>
+                Incoterm
+                <input
+                  value={form.incoterm ?? ''}
+                  onChange={(event) => handleFieldChange({ incoterm: event.target.value })}
+                />
+              </label>
+              <label>
                 Currency
                 <input
                   value={form.currency}
@@ -202,13 +209,13 @@ export default function InvoiceDraftReviewPage() {
                 />
               </label>
               <label>
-                Subtotal
+                Total value
                 <input
                   type="number"
-                  value={form.subtotal ?? ''}
+                  value={form.total_value ?? ''}
                   onChange={(event) =>
                     handleFieldChange({
-                      subtotal: Number.isFinite(Number(event.target.value))
+                      total_value: Number.isFinite(Number(event.target.value))
                         ? Number(event.target.value)
                         : null,
                     })
@@ -216,25 +223,29 @@ export default function InvoiceDraftReviewPage() {
                 />
               </label>
               <label>
-                Tax
+                Freight cost
                 <input
                   type="number"
-                  value={form.tax ?? ''}
+                  value={form.freight_cost ?? ''}
                   onChange={(event) =>
                     handleFieldChange({
-                      tax: Number.isFinite(Number(event.target.value)) ? Number(event.target.value) : null,
+                      freight_cost: Number.isFinite(Number(event.target.value))
+                        ? Number(event.target.value)
+                        : null,
                     })
                   }
                 />
               </label>
               <label>
-                Total
+                Insurance cost
                 <input
                   type="number"
-                  value={form.total ?? ''}
+                  value={form.insurance_cost ?? ''}
                   onChange={(event) =>
                     handleFieldChange({
-                      total: Number.isFinite(Number(event.target.value)) ? Number(event.target.value) : null,
+                      insurance_cost: Number.isFinite(Number(event.target.value))
+                        ? Number(event.target.value)
+                        : null,
                     })
                   }
                 />
@@ -244,8 +255,7 @@ export default function InvoiceDraftReviewPage() {
             <div className="invoice-side">
               <div className="invoice-metrics">
                 <h4>Totals check</h4>
-                <p>Calculated subtotal: {formatMoney(computedTotals?.subtotal ?? null)}</p>
-                <p>Calculated total: {formatMoney(computedTotals?.total ?? null)}</p>
+                <p>Calculated total value: {formatMoney(computedTotals?.totalValue ?? null)}</p>
                 {mismatch && (
                   <p className="status status--error">Totals mismatch detected.</p>
                 )}

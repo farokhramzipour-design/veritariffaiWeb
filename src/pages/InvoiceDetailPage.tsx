@@ -34,7 +34,7 @@ export default function InvoiceDetailPage() {
         <div>
           <p className="eyebrow">Invoice</p>
           <h2>{data.invoice_number ?? data.id}</h2>
-          <p className="muted">{data.vendor_name ?? 'Vendor'}</p>
+          <p className="muted">{data.supplier_name ?? 'Supplier'}</p>
         </div>
         <div className="invoice-detail__meta">
           <div>
@@ -49,21 +49,25 @@ export default function InvoiceDetailPage() {
             <span className="muted">Due date</span>
             <strong>{data.due_date ?? '—'}</strong>
           </div>
+          <div>
+            <span className="muted">Incoterm</span>
+            <strong>{data.incoterm ?? '—'}</strong>
+          </div>
         </div>
       </div>
 
       <div className="invoice-detail__summary">
         <div>
-          <span className="muted">Subtotal</span>
-          <strong>{formatMoney(data.subtotal)}</strong>
+          <span className="muted">Total value</span>
+          <strong>{formatMoney(data.total_value)}</strong>
         </div>
         <div>
-          <span className="muted">Tax</span>
-          <strong>{formatMoney(data.tax)}</strong>
+          <span className="muted">Freight</span>
+          <strong>{formatMoney(data.freight_cost)}</strong>
         </div>
         <div>
-          <span className="muted">Total</span>
-          <strong>{formatMoney(data.total)}</strong>
+          <span className="muted">Insurance</span>
+          <strong>{formatMoney(data.insurance_cost)}</strong>
         </div>
       </div>
 
@@ -72,18 +76,18 @@ export default function InvoiceDetailPage() {
           <span>Description</span>
           <span>Qty</span>
           <span>Unit Price</span>
-          <span>Tax Rate</span>
           <span>Line Total</span>
           <span>SKU</span>
+          <span>HS Code</span>
         </div>
         {data.items.map((item: InvoiceItemOut) => (
           <div key={item.id} className="invoice-detail__row">
             <span>{item.description}</span>
             <span>{item.quantity}</span>
             <span>{formatMoney(item.unit_price)}</span>
-            <span>{formatMoney(item.tax_rate)}</span>
             <span>{formatMoney(item.line_total)}</span>
             <span>{item.sku ?? '—'}</span>
+            <span>{item.validated_hs_code ?? item.extracted_hs_code ?? '—'}</span>
           </div>
         ))}
       </div>

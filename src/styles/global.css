@@ -1300,7 +1300,7 @@ input {
 
 .line-items__row {
   display: grid;
-  grid-template-columns: 2fr repeat(4, minmax(80px, 1fr)) 1fr 60px auto;
+  grid-template-columns: 2fr repeat(3, minmax(80px, 1fr)) 1fr 60px auto;
   gap: 10px;
   align-items: center;
 }
@@ -1417,7 +1417,7 @@ input {
 
 .invoice-detail__row {
   display: grid;
-  grid-template-columns: 2fr repeat(4, minmax(80px, 1fr)) 1fr;
+  grid-template-columns: 2fr repeat(2, minmax(80px, 1fr)) 1fr 1fr 1fr;
   gap: 10px;
   align-items: center;
 }
