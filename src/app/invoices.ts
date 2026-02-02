@@ -117,6 +117,10 @@ export type TariffSearchResult = {
   description: string;
 };
 
+type TariffSearchResponse = {
+  results?: TariffSearchResult[];
+};
+
 export type FxQuote = {
   rate: number;
   base: string;
@@ -191,8 +195,14 @@ export function useResolveValidationTask(taskId: string) {
 
 export function useTariffSearch() {
   return useMutation({
-    mutationFn: async (payload: { q: string; limit?: number }) =>
-      apiPostJson<TariffSearchResult[]>(`/api/v1/tariff/search`, payload),
+    mutationFn: async (payload: { q: string; limit?: number }) => {
+      const response = await apiPostJson<TariffSearchResult[] | TariffSearchResponse>(
+        `/api/v1/tariff/search`,
+        payload
+      );
+      if (Array.isArray(response)) return response;
+      return response.results ?? [];
+    },
   });
 }
 
