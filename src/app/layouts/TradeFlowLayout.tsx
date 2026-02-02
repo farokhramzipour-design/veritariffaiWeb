@@ -26,7 +26,10 @@ const sections: SidebarSection[] = [
   },
   {
     title: 'Intelligence',
-    items: [{ label: 'Market Insights', icon: '📈' }],
+    items: [
+      { label: 'Market Insights', icon: '📈' },
+      { label: 'Challenges', icon: '⚠️', to: '/challenges' },
+    ],
   },
 ];
 
