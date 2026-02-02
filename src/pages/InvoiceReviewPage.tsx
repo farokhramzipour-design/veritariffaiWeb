@@ -57,7 +57,12 @@ export default function InvoiceReviewPage() {
     if (!invoiceId || validatedOnceRef.current) return;
     validatedOnceRef.current = true;
     validateMutation.mutate(undefined, {
-      onSuccess: (payload) => setTasks(payload ?? []),
+      onSuccess: (payload) => {
+        const next = Array.isArray(payload)
+          ? payload
+          : (payload as { tasks?: ValidationTaskOut[] })?.tasks ?? [];
+        setTasks(next);
+      },
     });
   }, [invoiceId, validateMutation]);
 
@@ -90,7 +95,12 @@ export default function InvoiceReviewPage() {
   const refreshTasks = () => {
     if (!invoiceId) return;
     validateMutation.mutate(undefined, {
-      onSuccess: (payload) => setTasks(payload ?? []),
+      onSuccess: (payload) => {
+        const next = Array.isArray(payload)
+          ? payload
+          : (payload as { tasks?: ValidationTaskOut[] })?.tasks ?? [];
+        setTasks(next);
+      },
     });
     refetch();
   };
