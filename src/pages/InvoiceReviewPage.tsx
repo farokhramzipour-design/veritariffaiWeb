@@ -96,6 +96,19 @@ export default function InvoiceReviewPage() {
     });
   }, [tasks, invoice]);
 
+  const displayTasks = useMemo(() => {
+    const itemMap = new Map(invoice?.items?.map((item) => [item.id, item]) ?? []);
+    return tasks.filter((task) => {
+      const taskStatus = task.status?.toLowerCase?.() ?? task.status;
+      if (taskStatus === 'resolved') return false;
+      if (task.task_type === 'HS_CODE_MISSING' && task.line_item_id) {
+        const item = itemMap.get(task.line_item_id);
+        if (item?.validated_hs_code) return false;
+      }
+      return true;
+    });
+  }, [tasks, invoice]);
+
   useEffect(() => {
     if (activeTask || blockingTasks.length === 0) return;
     handleResolveTask(blockingTasks[0]);
@@ -178,7 +191,7 @@ export default function InvoiceReviewPage() {
   return (
     <Stack spacing={3}>
       <InvoiceHeaderSummary invoice={invoice} />
-      <ValidationTaskWizard tasks={tasks} onResolveTask={handleResolveTask} />
+      <ValidationTaskWizard tasks={displayTasks} onResolveTask={handleResolveTask} />
       <LineItemsTable items={invoice.items} onSelectHs={(item) => setSelectedLineItem(item)} />
 
       <CurrencySwitcherFooter
