@@ -42,6 +42,7 @@ export default function InvoiceReviewPage() {
   const [activeTask, setActiveTask] = useState<ValidationTaskOut | null>(null);
   const [selectedLineItem, setSelectedLineItem] = useState<InvoiceItemOut | null>(null);
   const [hsOptions, setHsOptions] = useState<TariffOption[]>([]);
+  const [hsDescription, setHsDescription] = useState<string>('');
   const [fxInfo, setFxInfo] = useState<{ rate: number; base: string; quote: string; timestamp?: string } | null>(
     null
   );
@@ -118,11 +119,21 @@ export default function InvoiceReviewPage() {
     setActiveTask(task);
     if (task.task_type === 'HS_CODE_MISSING' || task.task_type === 'HS_CODE_REFINEMENT') {
       const item = invoice?.items.find((line) => line.id === task.line_item_id);
-      if (item) setSelectedLineItem(item);
+      if (item) {
+        setSelectedLineItem(item);
+        setHsDescription(item.description);
+      } else {
+        setSelectedLineItem(null);
+      }
     }
-    const payload = task.payload as { options?: TariffOption[]; search_suggestions?: TariffOption[] } | undefined;
+    const payload = task.payload as
+      | { options?: TariffOption[]; search_suggestions?: TariffOption[]; description?: string }
+      | undefined;
     const options = payload?.options ?? payload?.search_suggestions ?? [];
     setHsOptions(options);
+    if (payload?.description) {
+      setHsDescription(payload.description);
+    }
   };
 
   const refreshTasks = () => {
@@ -218,16 +229,14 @@ export default function InvoiceReviewPage() {
         onClose={() => setActiveTask(null)}
         onSave={(payload) => handleResolve(payload)}
       />
-      {selectedLineItem && (
-        <ModalHsCodeSelect
-          open={activeTask?.task_type === 'HS_CODE_MISSING'}
-          description={selectedLineItem.description}
-          options={hsOptions}
-          onSearch={handleSearch}
-          onClose={() => setActiveTask(null)}
-          onSave={handleHsSave}
-        />
-      )}
+      <ModalHsCodeSelect
+        open={activeTask?.task_type === 'HS_CODE_MISSING'}
+        description={hsDescription || selectedLineItem?.description || 'Item'}
+        options={hsOptions}
+        onSearch={handleSearch}
+        onClose={() => setActiveTask(null)}
+        onSave={handleHsSave}
+      />
       <ModalHsRefine
         open={activeTask?.task_type === 'HS_CODE_REFINEMENT'}
         onClose={() => setActiveTask(null)}
