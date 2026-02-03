@@ -120,6 +120,15 @@ export default function InvoiceDraftReviewPage() {
     }
   };
 
+  const handleIncotermChange = (value: string) => {
+    if (!form) return;
+    handleFieldChange({ incoterm: value });
+    const normalized = value.toUpperCase();
+    if (normalized === 'CIF' || normalized === 'DDP') {
+      handleFieldChange({ freight_cost: 0, insurance_cost: 0 });
+    }
+  };
+
   const handleConfirm = async () => {
     if (!form) return;
     if (!form.currency) {
@@ -223,10 +232,17 @@ export default function InvoiceDraftReviewPage() {
               </label>
               <label>
                 Incoterm
-                <input
+                <select
                   value={form.incoterm ?? ''}
-                  onChange={(event) => handleFieldChange({ incoterm: event.target.value })}
-                />
+                  onChange={(event) => handleIncotermChange(event.target.value)}
+                >
+                  <option value="">Select</option>
+                  {['EXW', 'FOB', 'CIF', 'DDP'].map((term) => (
+                    <option key={term} value={term}>
+                      {term}
+                    </option>
+                  ))}
+                </select>
               </label>
               <label>
                 Currency
@@ -257,53 +273,67 @@ export default function InvoiceDraftReviewPage() {
               </label>
               <label>
                 Freight cost
-                <input
-                  type="number"
-                  value={form.freight_cost ?? ''}
-                  onChange={(event) =>
-                    handleFieldChange({
-                      freight_cost: Number.isFinite(Number(event.target.value))
-                        ? Number(event.target.value)
-                        : null,
-                    })
-                  }
-                />
+                {form.incoterm?.toUpperCase() === 'CIF' || form.incoterm?.toUpperCase() === 'DDP' ? (
+                  <input type="number" value={0} disabled />
+                ) : (
+                  <input
+                    type="number"
+                    value={form.freight_cost ?? ''}
+                    onChange={(event) =>
+                      handleFieldChange({
+                        freight_cost: Number.isFinite(Number(event.target.value))
+                          ? Number(event.target.value)
+                          : null,
+                      })
+                    }
+                  />
+                )}
               </label>
               <label>
                 Insurance cost
-                <input
-                  type="number"
-                  value={form.insurance_cost ?? ''}
-                  onChange={(event) =>
-                    handleFieldChange({
-                      insurance_cost: Number.isFinite(Number(event.target.value))
-                        ? Number(event.target.value)
-                        : null,
-                    })
-                  }
-                />
-              </label>
-              <label>
-                Insurance mode
-                <select
-                  value={insuranceMode}
-                  onChange={(event) => handleInsuranceModeChange(event.target.value as 'fixed' | 'rate')}
-                >
-                  <option value="fixed">Enter fixed amount</option>
-                  <option value="rate">Estimate from total value</option>
-                </select>
-              </label>
-              {insuranceMode === 'rate' && (
-                <label>
-                  Insurance rate (% of total value)
+                {form.incoterm?.toUpperCase() === 'CIF' || form.incoterm?.toUpperCase() === 'DDP' ? (
+                  <input type="number" value={0} disabled />
+                ) : (
                   <input
                     type="number"
-                    value={insuranceRate}
-                    onChange={(event) => handleInsuranceRateChange(Number(event.target.value))}
-                    min="0"
-                    step="0.1"
+                    value={form.insurance_cost ?? ''}
+                    onChange={(event) =>
+                      handleFieldChange({
+                        insurance_cost: Number.isFinite(Number(event.target.value))
+                          ? Number(event.target.value)
+                          : null,
+                      })
+                    }
                   />
-                </label>
+                )}
+              </label>
+              {form.incoterm?.toUpperCase() !== 'CIF' && form.incoterm?.toUpperCase() !== 'DDP' && (
+                <>
+                  <label>
+                    Insurance mode
+                    <select
+                      value={insuranceMode}
+                      onChange={(event) =>
+                        handleInsuranceModeChange(event.target.value as 'fixed' | 'rate')
+                      }
+                    >
+                      <option value="fixed">Enter fixed amount</option>
+                      <option value="rate">Estimate from total value</option>
+                    </select>
+                  </label>
+                  {insuranceMode === 'rate' && (
+                    <label>
+                      Insurance rate (% of total value)
+                      <input
+                        type="number"
+                        value={insuranceRate}
+                        onChange={(event) => handleInsuranceRateChange(Number(event.target.value))}
+                        min="0"
+                        step="0.1"
+                      />
+                    </label>
+                  )}
+                </>
               )}
             </div>
 
