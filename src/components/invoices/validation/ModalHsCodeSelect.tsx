@@ -11,7 +11,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { TariffSearchResult } from '@app/invoices';
 
 type Props = {
@@ -36,6 +36,23 @@ export default function ModalHsCodeSelect({
   const [results, setResults] = useState<TariffSearchResult[]>(options);
   const [manual, setManual] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    setSelected('');
+    setManual('');
+    setQuery(description);
+    setResults(options);
+  }, [open, description, options]);
+
+  useEffect(() => {
+    if (!open || !description) return;
+    if (options.length) return;
+    setLoading(true);
+    onSearch(description)
+      .then((next) => setResults(next))
+      .finally(() => setLoading(false));
+  }, [open, description, options, onSearch]);
 
   const handleSearch = async () => {
     if (!query) return;
