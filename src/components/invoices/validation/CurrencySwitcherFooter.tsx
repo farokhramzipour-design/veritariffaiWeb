@@ -16,7 +16,7 @@ type Props = {
   selectedCurrency: string;
   onChangeCurrency: (value: string) => void;
   onConvert: () => void;
-  fxInfo?: { rate: number; base: string; quote: string; timestamp?: string } | null;
+  fxInfo?: { rate: number; base: string; quote: string; date?: string } | null;
   disabled: boolean;
   error?: string | null;
   canContinue: boolean;
@@ -43,7 +43,7 @@ export default function CurrencySwitcherFooter({
             {fxInfo && (
               <Typography variant="caption" color="text.secondary">
                 Rate: 1 {fxInfo.base} = {fxInfo.rate} {fxInfo.quote}
-                {fxInfo.timestamp ? ` · ${fxInfo.timestamp}` : ''}
+                {fxInfo.date ? ` · ${fxInfo.date}` : ''}
               </Typography>
             )}
             {error && <Alert severity="error">{error}</Alert>}

@@ -125,7 +125,9 @@ export type FxQuote = {
   rate: number;
   base: string;
   quote: string;
-  timestamp?: string;
+  date?: string;
+  amount?: number;
+  converted?: number;
 };
 
 export function useUploadInvoice() {

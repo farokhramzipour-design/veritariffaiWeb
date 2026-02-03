@@ -43,9 +43,7 @@ export default function InvoiceReviewPage() {
   const [selectedLineItem, setSelectedLineItem] = useState<InvoiceItemOut | null>(null);
   const [hsOptions, setHsOptions] = useState<TariffOption[]>([]);
   const [hsDescription, setHsDescription] = useState<string>('');
-  const [fxInfo, setFxInfo] = useState<{ rate: number; base: string; quote: string; timestamp?: string } | null>(
-    null
-  );
+  const [fxInfo, setFxInfo] = useState<{ rate: number; base: string; quote: string; date?: string } | null>(null);
   const [currency, setCurrency] = useState('USD');
   const [currencyError, setCurrencyError] = useState<string | null>(null);
   const validatedOnceRef = useRef(false);
