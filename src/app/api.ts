@@ -71,7 +71,7 @@ async function requestWithRefresh(
   signal?: AbortSignal
 ) {
   const response = await fetch(input, { ...init, signal });
-  if (response.status !== 401) return response;
+  if (response.status !== 401 && response.status !== 403) return response;
 
   const newToken = await refreshAccessToken();
   if (!newToken) return response;
