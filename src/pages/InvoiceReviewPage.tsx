@@ -110,10 +110,7 @@ export default function InvoiceReviewPage() {
     });
   }, [tasks, invoice]);
 
-  useEffect(() => {
-    if (activeTask || blockingTasks.length === 0) return;
-    handleResolveTask(blockingTasks[0]);
-  }, [blockingTasks, activeTask]);
+  // Do not auto-open tasks; user will click "Resolve task" to open modals.
 
   const handleResolveTask = (task: ValidationTaskOut) => {
     setActiveTask(task);
