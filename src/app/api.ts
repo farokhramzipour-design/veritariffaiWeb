@@ -70,13 +70,26 @@ async function requestWithRefresh(
   init: RequestInit,
   signal?: AbortSignal
 ) {
-  const response = await fetch(input, { ...init, signal });
+  let headers = init.headers;
+  const hasAuth =
+    typeof headers === 'object' &&
+    headers !== null &&
+    'Authorization' in headers &&
+    Boolean((headers as Record<string, string>).Authorization);
+  if (!hasAuth && getRefreshToken()) {
+    const newToken = await refreshAccessToken();
+    if (newToken) {
+      headers = buildHeaders(headers);
+    }
+  }
+
+  const response = await fetch(input, { ...init, headers, signal });
   if (response.status !== 401 && response.status !== 403) return response;
 
   const newToken = await refreshAccessToken();
   if (!newToken) return response;
 
-  const retryHeaders = buildHeaders(init.headers);
+  const retryHeaders = buildHeaders(headers);
   return fetch(input, { ...init, headers: retryHeaders, signal });
 }
 
@@ -108,11 +121,14 @@ export async function apiGetOptionalJson<T>(
   path: string,
   signal?: AbortSignal
 ): Promise<T | null> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    signal,
-    credentials: 'include',
-    headers: buildHeaders(),
-  });
+  const response = await requestWithRefresh(
+    `${API_BASE_URL}${path}`,
+    {
+      credentials: 'include',
+      headers: buildHeaders(),
+    },
+    signal
+  );
   if (!response.ok) {
     const message = await response.text();
     throw new Error(message || `Request failed: ${response.status}`);
