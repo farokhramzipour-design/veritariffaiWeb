@@ -36,6 +36,8 @@ export default function InvoiceDraftReviewPage() {
   const confirmMutation = useConfirmInvoice(draftId ?? '');
   const [form, setForm] = useState<ConfirmInvoiceRequest | null>(null);
   const [dirty, setDirty] = useState(false);
+  const [insuranceMode, setInsuranceMode] = useState<'fixed' | 'rate'>('fixed');
+  const [insuranceRate, setInsuranceRate] = useState<number>(0.5);
   const lineConfidences = useMemo(
     () =>
       data?.extracted_payload?.line_items?.map((item: LineItemExtract) => item.confidence ?? null) ??
@@ -71,6 +73,11 @@ export default function InvoiceDraftReviewPage() {
       insurance_cost: normalizeDraftValue(payload.insurance_cost),
       line_items: lineItems.length ? lineItems : [{ description: '', quantity: 1 }],
     });
+    if (payload.insurance_cost != null && payload.total_value != null) {
+      const derived = payload.total_value ? (payload.insurance_cost / payload.total_value) * 100 : 0;
+      setInsuranceRate(Number(derived.toFixed(2)));
+      setInsuranceMode('fixed');
+    }
   }, [data, dirty]);
 
   const computedTotals = useMemo(() => {
@@ -91,6 +98,26 @@ export default function InvoiceDraftReviewPage() {
     if (!form) return;
     setDirty(true);
     setForm({ ...form, ...patch });
+  };
+
+  const handleInsuranceModeChange = (mode: 'fixed' | 'rate') => {
+    if (!form) return;
+    setInsuranceMode(mode);
+    if (mode === 'rate') {
+      const totalValue = form.total_value ?? 0;
+      const computed = Number(((totalValue * insuranceRate) / 100).toFixed(2));
+      handleFieldChange({ insurance_cost: computed });
+    }
+  };
+
+  const handleInsuranceRateChange = (value: number) => {
+    if (!form) return;
+    setInsuranceRate(value);
+    if (insuranceMode === 'rate') {
+      const totalValue = form.total_value ?? 0;
+      const computed = Number(((totalValue * value) / 100).toFixed(2));
+      handleFieldChange({ insurance_cost: computed });
+    }
   };
 
   const handleConfirm = async () => {
@@ -203,10 +230,16 @@ export default function InvoiceDraftReviewPage() {
               </label>
               <label>
                 Currency
-                <input
+                <select
                   value={form.currency}
-                  onChange={(event) => handleFieldChange({ currency: event.target.value.toUpperCase() })}
-                />
+                  onChange={(event) => handleFieldChange({ currency: event.target.value })}
+                >
+                  {['USD', 'EUR', 'GBP'].map((currency) => (
+                    <option key={currency} value={currency}>
+                      {currency}
+                    </option>
+                  ))}
+                </select>
               </label>
               <label>
                 Total value
@@ -250,6 +283,28 @@ export default function InvoiceDraftReviewPage() {
                   }
                 />
               </label>
+              <label>
+                Insurance mode
+                <select
+                  value={insuranceMode}
+                  onChange={(event) => handleInsuranceModeChange(event.target.value as 'fixed' | 'rate')}
+                >
+                  <option value="fixed">Enter fixed amount</option>
+                  <option value="rate">Estimate from total value</option>
+                </select>
+              </label>
+              {insuranceMode === 'rate' && (
+                <label>
+                  Insurance rate (% of total value)
+                  <input
+                    type="number"
+                    value={insuranceRate}
+                    onChange={(event) => handleInsuranceRateChange(Number(event.target.value))}
+                    min="0"
+                    step="0.1"
+                  />
+                </label>
+              )}
             </div>
 
             <div className="invoice-side">

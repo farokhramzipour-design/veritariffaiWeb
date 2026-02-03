@@ -1265,6 +1265,13 @@ input {
   border: 1px solid var(--color-border);
 }
 
+.invoice-form select {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: #fff;
+}
+
 .invoice-side {
   display: grid;
   gap: 16px;
