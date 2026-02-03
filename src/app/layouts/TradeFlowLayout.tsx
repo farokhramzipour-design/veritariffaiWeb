@@ -16,7 +16,7 @@ const sections: SidebarSection[] = [
   {
     title: 'Metal Importers',
     items: [
-      { label: 'New Shipments', icon: '🚢', to: '/invoices/upload' },
+      { label: 'New Shipments', icon: '🚢', to: '/invoices' },
       { label: 'Compliance Tasks', icon: '✅' },
       { label: 'Passport Library', icon: '🧾' },
       { label: 'Collaboration', icon: '🤝' },

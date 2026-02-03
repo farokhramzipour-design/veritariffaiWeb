@@ -11,6 +11,7 @@ import InvoiceDraftReviewPage from '@pages/InvoiceDraftReviewPage';
 import InvoiceDetailPage from '@pages/InvoiceDetailPage';
 import ChallengesPage from '@pages/ChallengesPage';
 import InvoiceReviewPage from '@pages/InvoiceReviewPage';
+import InvoicesListPage from '@pages/InvoicesListPage';
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
           }
         >
           <Route path="/panel" element={<Panel />} />
+          <Route path="/invoices" element={<InvoicesListPage />} />
           <Route path="/invoices/upload" element={<InvoiceUploadPage />} />
           <Route path="/invoices/drafts/:draftId" element={<InvoiceDraftReviewPage />} />
           <Route path="/invoices/:invoiceId" element={<InvoiceDetailPage />} />
